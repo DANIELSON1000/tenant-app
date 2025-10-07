@@ -2,7 +2,7 @@
 """
 Tenant Rent Prediction Web App (Cloud-ready, joblib only)
 Author: GODSON
-Enhanced with due date tracking and better tenant management
+Enhanced with due date tracking
 """
 
 import streamlit as st
@@ -177,44 +177,19 @@ def main():
         else:
             st.success("Rent is reasonable: tenant likely to pay on time.")
 
-    # Tenant Management Section
-    st.subheader("👥 Tenant Management Dashboard")
+    # Tenant Records Section
+    st.subheader("📝 Tenant Records")
     
     if not history_df.empty:
         # Calculate payment status for all records
         history_df['Payment Status'] = history_df['Next Payment Due Date'].apply(get_payment_status)
         
-        # Display tenant summary table
-        st.markdown("### Tenant Summary")
-        
-        # Create a simplified view for tenant management
-        tenant_cols = ['Tenant Name', 'Telephone Number', 'City', 'Area Locality', 
-                      'Predicted Rent', 'Previous Payment Date', 'Next Payment Due Date', 'Payment Status']
-        
-        # Filter to only columns that exist in the dataframe
-        available_cols = [col for col in tenant_cols if col in history_df.columns]
-        tenant_summary = history_df[available_cols].copy()
-        
-        # Style the dataframe based on payment status
-        def color_payment_status(val):
-            if val == "Overdue":
-                return 'color: red; font-weight: bold'
-            elif val == "Due Today":
-                return 'color: orange; font-weight: bold'
-            elif val == "Due Soon":
-                return 'color: #FFD700; font-weight: bold'
-            elif val == "Upcoming":
-                return 'color: green'
-            else:
-                return ''
-        
-        # Apply styling
-        styled_df = tenant_summary.style.map(color_payment_status, subset=['Payment Status'])
-        st.dataframe(styled_df, use_container_width=True)
+        # Display all tenant records
+        st.dataframe(history_df, use_container_width=True)
         
         # Payment status summary
         st.markdown("### Payment Status Overview")
-        status_counts = tenant_summary['Payment Status'].value_counts()
+        status_counts = history_df['Payment Status'].value_counts()
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
@@ -225,10 +200,6 @@ def main():
             st.metric("Due Today", status_counts.get("Due Today", 0))
         with col4:
             st.metric("Upcoming", status_counts.get("Upcoming", 0))
-        
-        # Detailed view with all data
-        st.markdown("### Detailed Tenant Records")
-        st.dataframe(history_df, use_container_width=True)
         
         # Delete functionality
         st.markdown("### Record Management")
